@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "1",
+  "site": { "origin": "https://example.com" },
+  "trailingSlash": "as-declared",
+  "routes": "routes.json"
+}
