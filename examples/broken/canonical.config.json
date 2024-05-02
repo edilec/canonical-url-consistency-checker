@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1",
+  "site": {
+    "origin": "https://example.com",
+    "alternateOrigins": ["https://www.example.com"]
+  },
+  "trailingSlash": "never",
+  "routes": "routes.json",
+  "sitemaps": ["sitemap.xml"],
+  "redirects": "redirects.json"
+}

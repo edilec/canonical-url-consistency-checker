@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1",
+  "routes": [
+    { "path": "/", "html": "build/index.html" },
+    { "path": "/pricing", "html": "build/pricing.html" },
+    { "path": "/café", "html": "build/cafe.html" },
+    {
+      "path": "/legacy-pricing",
+      "html": "build/legacy-pricing.html",
+      "canonical": "https://example.com/pricing",
+      "indexable": false
+    }
+  ]
+}

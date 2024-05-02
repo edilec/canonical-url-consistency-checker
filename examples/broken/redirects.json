@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1",
+  "redirects": [
+    { "from": "/old-plans", "to": "/plans", "status": 301 },
+    { "from": "/legacy-docs", "to": "/docs", "status": 308 }
+  ]
+}
