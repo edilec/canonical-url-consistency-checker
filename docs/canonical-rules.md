@@ -139,9 +139,35 @@ No input is ever truncated silently, and an incomplete result is never a pass.
 The sitemap scanner additionally enforces a 16-element nesting depth and a
 4096-character bound on one `<loc>` value.
 
+## Input-root confinement
+
 Input paths are a boundary, not a suggestion: every path in the configuration
 must be relative and must resolve inside the input root. A manifest pointing at
 `../../secrets.json` is a configuration error, not a route.
+
+Spelling is only half of that boundary. A symbolic link planted inside the root
+points wherever it likes, so each path is confined twice: once as written, and
+again after every link on the way to it has been followed, against the **real**
+path of the root itself. The root is resolved for real too, because a root can
+sit behind a link as `/var` does on macOS.
+
+Confinement runs before anything is opened, so a refused path is never read and
+nothing from outside the root can reach the report. A refusal is a configuration
+error — exit `2`, no report on stdout — and names its rule:
+
+| Rule | Meaning |
+| --- | --- |
+| `input-not-relative` | The path is absent, empty or absolute. |
+| `input-outside-root` | The path as written resolves outside the input root. |
+| `input-escapes-root` | The path stays inside the root as written but leaves it through a symbolic link. |
+| `input-unresolvable` | The path could not be resolved at all (a permission error, say). |
+
+A path need not exist to be confined: the deepest ancestor that does exist is
+resolved for real and the missing segments below it are appended, so a build
+output that was never produced still reaches the audit as `html-unreadable`
+rather than being refused here. A link whose target stays inside the root is
+followed normally — the boundary is where a path lands, not whether a link was
+involved.
 
 ## Determinism
 

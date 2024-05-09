@@ -48,7 +48,7 @@ canonical-url-consistency-checker --config FILE [--root DIR] [--trailing-slash P
 | Option | Meaning |
 | --- | --- |
 | `--config FILE` | Project configuration. Required. |
-| `--root DIR` | Input root that every declared path resolves against and may not escape. Defaults to the config file's directory. |
+| `--root DIR` | Input root that every declared path resolves against and may not escape, by spelling or by symlink. Defaults to the config file's directory. |
 | `--trailing-slash POLICY` | Override `config.trailingSlash`: `always`, `never` or `as-declared`. |
 | `--json` | Suppress the human summary on stderr. |
 | `-h`, `--help` | Show usage. |
@@ -83,7 +83,10 @@ npm run check    # lint, test, example, pack check
 
 `trailingSlash` is required and has no default — see
 [docs/canonical-rules.md](./docs/canonical-rules.md). Every path is relative and
-must resolve inside the input root.
+must resolve inside the input root, both as written and after every symbolic
+link on the way to it has been followed. A path that leaves the root either way
+is refused before anything is opened, so nothing outside the declared tree is
+read or reported.
 
 ### Route manifest
 

@@ -7,7 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "lint": "node --check src/index.mjs && node --check src/url-identity.mjs && node --check src/html-scan.mjs && node --check src/sitemap-scan.mjs && node --check bin/canonical-url-consistency-checker.mjs && node --check test/identity.test.mjs && node --check test/audit.test.mjs && node --check test/cli.test.mjs",
+    "lint": "node --check src/index.mjs && node --check src/url-identity.mjs && node --check src/html-scan.mjs && node --check src/sitemap-scan.mjs && node --check bin/canonical-url-consistency-checker.mjs && node --check test/identity.test.mjs && node --check test/audit.test.mjs && node --check test/cli.test.mjs && node --check test/confinement.test.mjs",
     "test": "node --test",
     "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=src/**",
     "example": "node bin/canonical-url-consistency-checker.mjs --config examples/clean/canonical.config.json",

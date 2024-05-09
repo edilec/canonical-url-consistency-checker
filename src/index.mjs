@@ -10,8 +10,8 @@
  * by resolution, not by asking the network.
  */
 
-import { readFile, stat } from 'node:fs/promises'
-import { dirname, isAbsolute, relative, resolve, sep } from 'node:path'
+import { readFile, realpath, stat } from 'node:fs/promises'
+import { basename, dirname, isAbsolute, relative, resolve, sep } from 'node:path'
 
 import {
   IdentityError,
@@ -45,11 +45,18 @@ export const DEFAULT_LIMITS = Object.freeze({
 const LIMIT_NAMES = Object.freeze(Object.keys(DEFAULT_LIMITS))
 const EVIDENCE_LIMIT = 200
 
-/** A problem with the configuration itself, not with the site being checked. */
+/**
+ * A problem with the configuration itself, not with the site being checked.
+ *
+ * `rule` names the refusal when one is dedicated to a documented boundary, so a
+ * caller can tell an input-root violation from a schema mistake without matching
+ * on prose. It is `null` for the ordinary schema refusals.
+ */
 export class ConfigError extends Error {
-  constructor(message) {
+  constructor(message, rule = null) {
     super(message)
     this.name = 'ConfigError'
+    this.rule = rule
   }
 }
 
@@ -80,6 +87,41 @@ function makeFinding(ruleId, severity, message, location, extra = {}) {
   return finding
 }
 
+function escapes(from, target) {
+  const rel = relative(from, target)
+  return rel === '' || rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel)
+}
+
+/**
+ * The real path a target would have once every symbolic link on the way to it is
+ * followed.
+ *
+ * `realpath` needs the whole path to exist, but a build output that was never
+ * produced must still reach the audit as an `html-unreadable` finding rather
+ * than a configuration error. So the deepest ancestor that does exist is
+ * resolved for real and the segments below it are appended literally: a link
+ * anywhere along the existing part is still followed, and a missing leaf keeps
+ * the location its parent gives it.
+ */
+async function realPathOf(target) {
+  const tail = []
+  let current = target
+  for (;;) {
+    try {
+      const real = await realpath(current)
+      return tail.length === 0 ? real : resolve(real, ...tail)
+    } catch (error) {
+      if (error.code !== 'ENOENT' && error.code !== 'ENOTDIR') {
+        throw new ConfigError(`Could not resolve "${target}" (${error.code ?? 'unknown error'})`, 'input-unresolvable')
+      }
+      const parent = dirname(current)
+      if (parent === current) return target
+      tail.unshift(basename(current))
+      current = parent
+    }
+  }
+}
+
 /**
  * Resolve an input path declared in the configuration, refusing to leave the
  * declared root.
@@ -87,18 +129,34 @@ function makeFinding(ruleId, severity, message, location, extra = {}) {
  * The configuration is data, and data does not get to choose which files this
  * tool opens. A manifest that points at `../../.ssh/id_rsa` is a configuration
  * error, not a route.
+ *
+ * Spelling a path is not the only way to leave a tree, so the lexical check is
+ * not the whole boundary: a symbolic link planted inside the root points
+ * wherever it likes, and following one would read a file the configuration never
+ * had the right to name and echo its content into the report. The resolved path
+ * is therefore confined again after every link on it has been followed, against
+ * the real path of the root itself — the root may sit behind a link too, as
+ * `/var` does on macOS.
  */
-function resolveWithin(root, candidate, label) {
+async function resolveWithin(root, realRoot, candidate, label) {
   if (typeof candidate !== 'string' || candidate.trim() === '') {
-    throw new ConfigError(`${label} must be a non-empty relative path`)
+    throw new ConfigError(`${label} must be a non-empty relative path`, 'input-not-relative')
   }
   if (isAbsolute(candidate)) {
-    throw new ConfigError(`${label} must be relative to the input root, but "${candidate}" is absolute`)
+    throw new ConfigError(
+      `${label} must be relative to the input root, but "${candidate}" is absolute`,
+      'input-not-relative',
+    )
   }
   const resolved = resolve(root, candidate)
-  const rel = relative(root, resolved)
-  if (rel === '' || rel.startsWith('..') || isAbsolute(rel)) {
-    throw new ConfigError(`${label} resolves outside the input root: "${candidate}"`)
+  if (escapes(root, resolved)) {
+    throw new ConfigError(`${label} resolves outside the input root: "${candidate}"`, 'input-outside-root')
+  }
+  if (escapes(realRoot, await realPathOf(resolved))) {
+    throw new ConfigError(
+      `${label} leaves the input root through a symbolic link: "${candidate}". Nothing was read from it.`,
+      'input-escapes-root',
+    )
   }
   return resolved
 }
@@ -270,12 +328,13 @@ export async function loadProject(options = {}) {
   const configFile = resolve(options.config)
   const config = validateConfig(await readJsonFile(configFile, 'config'), options)
   const root = resolve(options.root ?? dirname(configFile))
+  const realRoot = await realPathOf(root)
   const limits = { ...DEFAULT_LIMITS, ...config.limits }
 
   const loadFindings = []
   let incomplete = false
 
-  const routesFile = resolveWithin(root, config.routes, 'routes')
+  const routesFile = await resolveWithin(root, realRoot, config.routes, 'routes')
   const routesPath = toPosix(relative(root, routesFile))
   let routes = validateRoutes(await readJsonFile(routesFile, 'route manifest')).routes
   if (routes.length > limits.maxRoutes) {
@@ -293,20 +352,20 @@ export async function loadProject(options = {}) {
   const documents = new Map()
   for (const route of routes) {
     if (documents.has(route.html)) continue
-    const file = resolveWithin(root, route.html, `routes[${route.index}].html`)
+    const file = await resolveWithin(root, realRoot, route.html, `routes[${route.index}].html`)
     documents.set(route.html, await readBounded(file, limits.maxHtmlBytes))
   }
 
   const sitemaps = []
   for (const [index, entry] of config.sitemaps.entries()) {
-    const file = resolveWithin(root, entry, `sitemaps[${index}]`)
+    const file = await resolveWithin(root, realRoot, entry, `sitemaps[${index}]`)
     sitemaps.push({ file: toPosix(entry), ...(await readBounded(file, limits.maxSitemapBytes)) })
   }
 
   let redirects = []
   let redirectsPath = null
   if (config.redirects !== null) {
-    const file = resolveWithin(root, config.redirects, 'redirects')
+    const file = await resolveWithin(root, realRoot, config.redirects, 'redirects')
     redirectsPath = toPosix(config.redirects)
     redirects = validateRedirects(await readJsonFile(file, 'redirect map')).redirects
     if (redirects.length > limits.maxRedirects) {
