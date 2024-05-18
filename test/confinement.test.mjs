@@ -182,6 +182,37 @@ test('a build output that does not exist yet is still an audit finding, not a bo
   }
 })
 
+test('a link cycle is refused, not walked', async () => {
+  // A target that cannot be resolved cannot be shown to be inside the root, so
+  // it is refused rather than opened — and refused as a named configuration
+  // error, not as an unhandled system error carrying a host path.
+  const { root, cleanup } = await tree()
+  try {
+    await symlink(join(root, 'loop-b.html'), join(root, 'loop-a.html'))
+    await symlink(join(root, 'loop-a.html'), join(root, 'loop-b.html'))
+    await writeFile(
+      join(root, 'routes.json'),
+      JSON.stringify({ schemaVersion: '1', routes: [{ path: '/', html: 'loop-a.html' }] }),
+    )
+    const configFile = await config(root, { routes: 'routes.json' })
+    await assert.rejects(
+      checkProject({ config: configFile }),
+      (error) => {
+        assert.ok(error instanceof ConfigError)
+        assert.equal(error.rule, 'input-unresolvable')
+        assert.match(error.message, /routes\[0\]\.html \("loop-a\.html"\) could not be resolved \(ELOOP\)/)
+        assert.equal(error.message.includes(root), false, 'the refusal must not echo a host path')
+        return true
+      },
+    )
+    const result = runCli(configFile)
+    assert.equal(result.code, 2)
+    assert.equal(result.stdout, '')
+  } finally {
+    await cleanup()
+  }
+})
+
 test('the lexical escape is refused with its own rule', async () => {
   const { root, cleanup } = await tree()
   try {

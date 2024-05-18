@@ -169,7 +169,7 @@ error — exit `2`, no report on stdout — and names its rule:
 | `input-not-relative` | The path is absent, empty or absolute. |
 | `input-outside-root` | The path as written resolves outside the input root. |
 | `input-escapes-root` | The path stays inside the root as written but leaves it through a symbolic link. |
-| `input-unresolvable` | The path could not be resolved at all (a permission error, say). |
+| `input-unresolvable` | The path could not be resolved at all — a link cycle, or a directory on the way down that cannot be read. |
 
 A path need not exist to be confined: the deepest ancestor that does exist is
 resolved for real and the missing segments below it are appended, so a build

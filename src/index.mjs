@@ -103,7 +103,7 @@ function escapes(from, target) {
  * anywhere along the existing part is still followed, and a missing leaf keeps
  * the location its parent gives it.
  */
-async function realPathOf(target) {
+async function realPathOf(target, describe) {
   const tail = []
   let current = target
   for (;;) {
@@ -112,7 +112,11 @@ async function realPathOf(target) {
       return tail.length === 0 ? real : resolve(real, ...tail)
     } catch (error) {
       if (error.code !== 'ENOENT' && error.code !== 'ENOTDIR') {
-        throw new ConfigError(`Could not resolve "${target}" (${error.code ?? 'unknown error'})`, 'input-unresolvable')
+        // A link cycle, or a directory on the way down that cannot be read. The
+        // target is unknown, so it cannot be shown to be inside the root, so it
+        // is refused. The host path stays out of the message; the declared one
+        // is what the reader can act on.
+        throw new ConfigError(`${describe} could not be resolved (${error.code ?? 'unknown error'})`, 'input-unresolvable')
       }
       const parent = dirname(current)
       if (parent === current) return target
@@ -152,7 +156,7 @@ async function resolveWithin(root, realRoot, candidate, label) {
   if (escapes(root, resolved)) {
     throw new ConfigError(`${label} resolves outside the input root: "${candidate}"`, 'input-outside-root')
   }
-  if (escapes(realRoot, await realPathOf(resolved))) {
+  if (escapes(realRoot, await realPathOf(resolved, `${label} ("${candidate}")`))) {
     throw new ConfigError(
       `${label} leaves the input root through a symbolic link: "${candidate}". Nothing was read from it.`,
       'input-escapes-root',
@@ -328,7 +332,7 @@ export async function loadProject(options = {}) {
   const configFile = resolve(options.config)
   const config = validateConfig(await readJsonFile(configFile, 'config'), options)
   const root = resolve(options.root ?? dirname(configFile))
-  const realRoot = await realPathOf(root)
+  const realRoot = await realPathOf(root, 'The input root')
   const limits = { ...DEFAULT_LIMITS, ...config.limits }
 
   const loadFindings = []
