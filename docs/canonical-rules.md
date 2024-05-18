@@ -125,6 +125,15 @@ Every limit is explicit and configurable under `limits` in the config. Reaching
 one produces a finding that names the limit and sets `status` to `incomplete`.
 No input is ever truncated silently, and an incomplete result is never a pass.
 
+That holds regardless of severity. A finding can be a `warning` and still make
+the report `incomplete` and the exit code `2`, because severity describes how
+bad a *known* fact is while `incomplete` describes evidence that was never read.
+A `<sitemapindex>` that the tool refuses to expand and an export whose root
+element it does not recognise are both warnings, and both exit `2`: the alternative
+would be reporting a pass over a file nothing ever looked inside. Every audit
+path that declares evidence unread is pinned to that outcome by a test in
+`test/incomplete.test.mjs`, one case per path.
+
 | Limit | Default | Guards |
 | --- | ---: | --- |
 | `maxRoutes` | 20000 | Route manifest entries. |

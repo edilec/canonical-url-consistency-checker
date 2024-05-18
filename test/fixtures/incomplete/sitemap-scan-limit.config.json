@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1",
+  "site": {
+    "origin": "https://example.com"
+  },
+  "trailingSlash": "never",
+  "routes": "routes.json",
+  "sitemaps": [
+    "sitemap-two.xml"
+  ],
+  "limits": {
+    "maxSitemapUrls": 1
+  }
+}

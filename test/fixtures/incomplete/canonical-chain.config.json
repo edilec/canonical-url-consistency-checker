@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1",
+  "site": {
+    "origin": "https://example.com"
+  },
+  "trailingSlash": "never",
+  "routes": "routes-chain.json",
+  "redirects": "redirects-chain.json",
+  "limits": {
+    "maxRedirectDepth": 1
+  }
+}

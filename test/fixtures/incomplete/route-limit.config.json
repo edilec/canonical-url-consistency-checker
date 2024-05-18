@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1",
+  "site": {
+    "origin": "https://example.com"
+  },
+  "trailingSlash": "never",
+  "routes": "routes-two.json",
+  "limits": {
+    "maxRoutes": 1
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "1",
+  "site": {
+    "origin": "https://example.com"
+  },
+  "trailingSlash": "never",
+  "routes": "routes-never-built.json"
+}

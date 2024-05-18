@@ -225,7 +225,8 @@ or a search engine, and it does not pretend otherwise.
   preserved, because reordering them changes meaning rather than normalising it.
 - **It does not fix anything.** It is read-only and writes no files.
 - **An unknown is never a pass.** Anything it could not read becomes `status:
-  "incomplete"` and exit `2`.
+  "incomplete"` and exit `2` — including when the finding that records it is
+  only a `warning`, such as a sitemap index it will not expand.
 
 ## Documentation
 

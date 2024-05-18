@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1",
+  "routes": [
+    {
+      "path": "/",
+      "html": "build/index.html"
+    },
+    {
+      "path": "/second",
+      "html": "build/index.html"
+    }
+  ]
+}

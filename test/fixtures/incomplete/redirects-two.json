@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1",
+  "redirects": [
+    {
+      "from": "/x",
+      "to": "/y"
+    },
+    {
+      "from": "/p",
+      "to": "/q"
+    }
+  ]
+}
