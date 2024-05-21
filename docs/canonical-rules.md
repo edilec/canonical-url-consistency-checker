@@ -178,6 +178,21 @@ rather than being refused here. A link whose target stays inside the root is
 followed normally — the boundary is where a path lands, not whether a link was
 involved.
 
+## What a refusal may repeat back
+
+A refusal names the file and what was wrong with it. It does not quote the file's content.
+
+That is not free. V8 reports an invalid document two ways, and one of them embeds the input:
+`Unexpected token 'A', "AKIAIOSFODNN7EXAMPLE" is not valid JSON` reproduces a short file in full,
+and a longer one through a window around the offence. The config, the route manifest and the
+redirect map all reach `JSON.parse`, and the file that fails to parse is the file whose content is
+least trustworthy. Bounding the message with `excerpt` does not help, because it trims from the end
+while the quoted span sits at the front.
+
+Only the useful half is kept: the position, line and column where V8 reports them, and the
+offending token where it does not. The quoted span is removed before the `ConfigError` is built, so
+it reaches neither stderr nor a CI log.
+
 ## Determinism
 
 Running the tool twice over identical bytes produces byte-identical stdout.
