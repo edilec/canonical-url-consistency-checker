@@ -1,0 +1,4 @@
+{
+  "schemaVersion": "1",
+  "routes": [{ "path": "/", "html": "index.html" }]
+}

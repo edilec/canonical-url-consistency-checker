@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1",
+  "routes": [
+    { "path": "/", "html": "build/index.html" },
+    { "path": "/pricing", "html": "build/pricing.html" },
+    { "path": "/plans", "html": "build/plans.html" },
+    { "path": "/café", "html": "build/cafe.html" },
+    { "path": "/mirror", "html": "build/mirror.html" },
+    { "path": "/docs", "html": "build/docs.html" },
+    { "path": "/docs/", "html": "build/docs-index.html" }
+  ]
+}

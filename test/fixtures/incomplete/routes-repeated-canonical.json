@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1",
+  "routes": [
+    {
+      "path": "/",
+      "html": "build/repeated-canonical.html"
+    }
+  ]
+}

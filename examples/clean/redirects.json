@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1",
+  "redirects": [
+    { "from": "/pricing/", "to": "/pricing", "status": 301 },
+    { "from": "/old-pricing", "to": "/pricing", "status": 301 }
+  ]
+}

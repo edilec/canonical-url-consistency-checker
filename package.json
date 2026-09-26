@@ -1,0 +1,51 @@
+{
+  "name": "canonical-url-consistency-checker",
+  "version": "0.1.0",
+  "description": "Resolve canonical declarations across a route manifest, built HTML and sitemap exports, and report disagreements about page identity.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "node --check src/index.mjs && node --check src/url-identity.mjs && node --check src/html-scan.mjs && node --check src/sitemap-scan.mjs && node --check bin/canonical-url-consistency-checker.mjs && node --check test/identity.test.mjs && node --check test/audit.test.mjs && node --check test/cli.test.mjs && node --check test/confinement.test.mjs && node --check test/incomplete.test.mjs && node --check test/parse-leak.test.mjs",
+    "test": "node --test",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=src/**",
+    "example": "node bin/canonical-url-consistency-checker.mjs --config examples/clean/canonical.config.json",
+    "pack:check": "npm pack --dry-run",
+    "check": "npm run lint && npm test && npm run example && npm run pack:check"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edilec/canonical-url-consistency-checker.git"
+  },
+  "bin": {
+    "canonical-url-consistency-checker": "./bin/canonical-url-consistency-checker.mjs"
+  },
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "examples",
+    "docs",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "canonical",
+    "seo",
+    "sitemap",
+    "redirects",
+    "url",
+    "audit",
+    "cli"
+  ],
+  "author": "Edilec Private Limited",
+  "bugs": {
+    "url": "https://github.com/edilec/canonical-url-consistency-checker/issues"
+  },
+  "homepage": "https://github.com/edilec/canonical-url-consistency-checker#readme"
+}
