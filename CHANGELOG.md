@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
+## 0.1.0 - 2026-09-28
 
 ### Added
 
@@ -34,5 +34,3 @@ All notable changes to this project are documented in this file.
 - runnable clean and deliberately broken examples;
 - the rule catalog, limits and determinism guarantee in
   `docs/canonical-rules.md`.
-
-No release has been published.
