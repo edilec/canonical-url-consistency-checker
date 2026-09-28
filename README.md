@@ -5,6 +5,7 @@ manifest, in its built HTML and in its sitemap exports — against one explicit
 policy, and report where they disagree about which URL names a page.
 
 - **Repository:** [edilec/canonical-url-consistency-checker](https://github.com/edilec/canonical-url-consistency-checker)
+- **Worked example:** [Compare consistent and conflicting canonical declarations](https://edilec.com/open-source/canonical-url-consistency-checker/) using public synthetic build exports.
 - **Area:** SEO & Search
 - **License:** MIT
 - **Dependencies:** none, at runtime or in development. Node 22+ built-ins only.
@@ -27,17 +28,16 @@ It is deliberately narrower than a crawler and deliberately different from
 `content-identity-auditor`, which compares the canonicals an inventory already
 declares. This one *resolves* declarations across separate build artefacts.
 
-## Install
+## Run locally
 
 ```sh
-npm install canonical-url-consistency-checker
-```
-
-Or run it from a checkout with no install step at all:
-
-```sh
+git clone https://github.com/edilec/canonical-url-consistency-checker.git
+cd canonical-url-consistency-checker
 node bin/canonical-url-consistency-checker.mjs --config examples/clean/canonical.config.json
 ```
+
+The tool uses only Node.js 22+ built-ins. The package is not published to npm;
+run it from a checkout.
 
 ## Commands
 
